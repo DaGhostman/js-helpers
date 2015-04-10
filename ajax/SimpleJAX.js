@@ -116,7 +116,7 @@ Number.prototype.inRange = function (start, end) {
     };
 
     ajax.prototype.notFound = function(callback) {
-        this.callbacks['notFound'] = callback;
+        this.callbacks['notfound'] = callback;
 
         return this;
     };
@@ -131,16 +131,16 @@ Number.prototype.inRange = function (start, end) {
         var http = this.instance;
         var self = this;
         this.instance.onreadystatechange = function() {
-            console.log(http.readyState);
-            if (http.readyState !== 4) {
                 // Trigger early (the 404 can terminate the request)
                 if (http.status === 404) {
                     self.trigger('notFound', {
                             method: http.method,
                             url: http.url
                         });
+                    http.onreadystatechange = null;
+                    return false;
                 }
-            } else if (http.readyState === 4 && 200 <= http.status <= 299) {
+            if (http.readyState === 4 && 200 <= http.status <= 299) {
                 self.trigger('success', {
                     type: http.responseType,
                     content: http.responseText,
