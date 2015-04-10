@@ -76,7 +76,6 @@ Number.prototype.inRange = function (start, end) {
         this.instance = new window.XMLHttpRequest;
         this.instance.open(method, url, false, user, password);
         if (typeof headers === 'Object' && headers.length !== 0) {
-            console.log(headers);
             this.headers = headers;
         }
 
@@ -140,22 +139,28 @@ Number.prototype.inRange = function (start, end) {
                     http.onreadystatechange = null;
                     return false;
                 }
-            if (http.readyState === 4 && 200 <= http.status <= 299) {
-                self.trigger('success', {
-                    type: http.responseType,
-                    content: http.responseText,
-                    headers: http.getAllResponseHeaders()
-                });
-            } else if (http.readyState === 4) {
-                self.trigger('error', {
-                    method: http.method,
-                    url: http.url,
-                    response: {
+            console.log(http.status);
+            if (http.readyState === 4) {
+                if (http.status >= 400) {
+                    self.trigger('error', {
+                        method: http.method,
+                        url: http.url,
+                        response: {
+                            type: http.responseType,
+                            headers: http.getAllResponseHeaders(),
+                            body: http.responseText
+                        }
+                    });
+                    self.stop();
+                    return false;
+                }
+                if (200 <= http.status <= 299) {
+                    self.trigger('success', {
                         type: http.responseType,
-                        headers: http.getAllResponseHeaders(),
-                        body: http.responseText
-                    }
-                });
+                        content: http.responseText,
+                        headers: http.getAllResponseHeaders()
+                    });
+                }
             }
         };
 
